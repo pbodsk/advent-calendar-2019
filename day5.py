@@ -65,9 +65,10 @@ def handle_instruction():
 
     opcode = int(s_opcode)
 
+    # advance to next step
+    instruction_pointer += 1
     if opcode == Opcode.PLUS.value:
         # first value
-        instruction_pointer += 1
         first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
 
         # second value
@@ -83,11 +84,8 @@ def handle_instruction():
         # and store
         instructions[destination] = str(result)
 
-        instruction_pointer += 1
-        return True
     elif opcode == Opcode.MULTIPLY.value:
         # first value
-        instruction_pointer += 1
         first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
 
         # second value
@@ -103,30 +101,19 @@ def handle_instruction():
         # and store
         instructions[destination] = str(result)
 
-        instruction_pointer += 1
-        return True
     elif opcode == Opcode.INPUT.value:
         # advance
-        instruction_pointer += 1
         address = int(instructions[instruction_pointer])
         instructions[address] = system_id #should handle variable input
-        instruction_pointer += 1
-        return True
     elif opcode == Opcode.OUTPUT.value:
         # advance
-        instruction_pointer += 1
         address = int(instructions[instruction_pointer])
         if len(mode_flags) > 0 and mode_flags[mode_flag_pointer] == ParameterMode.IMMEDIATE_MODE.value:
             output = instructions[instruction_pointer]
         else:
             output = instructions[address]
         print("output: " + output)
-        instruction_pointer += 1
-        return True
     elif opcode == Opcode.JUMP_IF_TRUE.value:
-
-        # advance
-        instruction_pointer += 1
         first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
 
         if first_value != 0:
@@ -143,8 +130,6 @@ def handle_instruction():
 
         return True
     elif opcode == Opcode.JUMP_IF_FALSE.value:
-        # advance
-        instruction_pointer += 1
         first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
         if first_value == 0:
             # set instructionpointer to VALUE from second parameter
@@ -159,8 +144,6 @@ def handle_instruction():
 
         return True
     elif opcode == Opcode.LESS_THAN.value:
-        # advance
-        instruction_pointer += 1
         first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
 
         # advance
@@ -177,11 +160,7 @@ def handle_instruction():
         else:
             instructions[destination] = "0"
 
-        instruction_pointer += 1
-        return True
     elif opcode == Opcode.EQUALS.value:
-        # advance
-        instruction_pointer += 1
         first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
 
         # advance
@@ -198,13 +177,14 @@ def handle_instruction():
         else:
             instructions[destination] = "0"
 
-        instruction_pointer += 1
-        return True
     elif opcode == Opcode.COMPLETE.value:
         print("done")
         return False
     else:
         raise NotImplemented
+
+    instruction_pointer += 1
+    return True
 
 
 # lets go
