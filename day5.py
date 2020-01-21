@@ -5,6 +5,10 @@ class Opcode(Enum):
     MULTIPLY = 2
     INPUT = 3
     OUTPUT = 4
+    JUMP_IF_TRUE = 5
+    JUMP_IF_FALSE = 6
+    LESS_THAN = 7
+    EQUALS = 8
     COMPLETE = 99
 
 
@@ -15,7 +19,9 @@ class ParameterMode(Enum):
 
 input = "3,225,1,225,6,6,1100,1,238,225,104,0,1102,40,93,224,1001,224,-3720,224,4,224,102,8,223,223,101,3,224,224,1,224,223,223,1101,56,23,225,1102,64,78,225,1102,14,11,225,1101,84,27,225,1101,7,82,224,1001,224,-89,224,4,224,1002,223,8,223,1001,224,1,224,1,224,223,223,1,35,47,224,1001,224,-140,224,4,224,1002,223,8,223,101,5,224,224,1,224,223,223,1101,75,90,225,101,9,122,224,101,-72,224,224,4,224,1002,223,8,223,101,6,224,224,1,224,223,223,1102,36,63,225,1002,192,29,224,1001,224,-1218,224,4,224,1002,223,8,223,1001,224,7,224,1,223,224,223,102,31,218,224,101,-2046,224,224,4,224,102,8,223,223,101,4,224,224,1,224,223,223,1001,43,38,224,101,-52,224,224,4,224,1002,223,8,223,101,5,224,224,1,223,224,223,1102,33,42,225,2,95,40,224,101,-5850,224,224,4,224,1002,223,8,223,1001,224,7,224,1,224,223,223,1102,37,66,225,4,223,99,0,0,0,677,0,0,0,0,0,0,0,0,0,0,0,1105,0,99999,1105,227,247,1105,1,99999,1005,227,99999,1005,0,256,1105,1,99999,1106,227,99999,1106,0,265,1105,1,99999,1006,0,99999,1006,227,274,1105,1,99999,1105,1,280,1105,1,99999,1,225,225,225,1101,294,0,0,105,1,0,1105,1,99999,1106,0,300,1105,1,99999,1,225,225,225,1101,314,0,0,106,0,0,1105,1,99999,1007,226,677,224,1002,223,2,223,1005,224,329,1001,223,1,223,1007,226,226,224,1002,223,2,223,1006,224,344,101,1,223,223,1107,677,226,224,102,2,223,223,1006,224,359,1001,223,1,223,108,677,677,224,1002,223,2,223,1006,224,374,1001,223,1,223,107,677,677,224,1002,223,2,223,1005,224,389,101,1,223,223,8,677,677,224,1002,223,2,223,1005,224,404,1001,223,1,223,108,226,226,224,1002,223,2,223,1005,224,419,101,1,223,223,1008,677,677,224,1002,223,2,223,1005,224,434,101,1,223,223,1008,226,226,224,1002,223,2,223,1005,224,449,101,1,223,223,7,677,226,224,1002,223,2,223,1006,224,464,1001,223,1,223,7,226,226,224,1002,223,2,223,1005,224,479,1001,223,1,223,1007,677,677,224,102,2,223,223,1005,224,494,101,1,223,223,1108,677,226,224,102,2,223,223,1006,224,509,1001,223,1,223,8,677,226,224,102,2,223,223,1005,224,524,1001,223,1,223,1107,226,226,224,102,2,223,223,1006,224,539,1001,223,1,223,1008,226,677,224,1002,223,2,223,1006,224,554,1001,223,1,223,1107,226,677,224,1002,223,2,223,1006,224,569,1001,223,1,223,1108,677,677,224,102,2,223,223,1005,224,584,101,1,223,223,7,226,677,224,102,2,223,223,1006,224,599,1001,223,1,223,1108,226,677,224,102,2,223,223,1006,224,614,101,1,223,223,107,226,677,224,1002,223,2,223,1005,224,629,101,1,223,223,108,226,677,224,1002,223,2,223,1005,224,644,101,1,223,223,8,226,677,224,1002,223,2,223,1005,224,659,1001,223,1,223,107,226,226,224,1002,223,2,223,1006,224,674,101,1,223,223,4,223,99,226"
 #input = "1002,4,3,4,33"
-system_id = "1"
+#input = "3,3,1105,-1,9,1101,0,0,12,4,12,99,1"
+#input = "3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99"
+system_id = "5"
 instructions = input.split(",")
 #instructions = list(map(lambda s: int(s), s_instructions))
 
@@ -103,15 +109,95 @@ def handle_instruction():
         # advance
         instruction_pointer += 1
         address = int(instructions[instruction_pointer])
-        instructions[address] = system_id
+        instructions[address] = system_id #should handle variable input
         instruction_pointer += 1
         return True
     elif opcode == Opcode.OUTPUT.value:
-        #advance
+        # advance
         instruction_pointer += 1
         address = int(instructions[instruction_pointer])
-        output = instructions[address]
+        if len(mode_flags) > 0 and mode_flags[mode_flag_pointer] == ParameterMode.IMMEDIATE_MODE.value:
+            output = instructions[instruction_pointer]
+        else:
+            output = instructions[address]
         print("output: " + output)
+        instruction_pointer += 1
+        return True
+    elif opcode == Opcode.JUMP_IF_TRUE.value:
+
+        # advance
+        instruction_pointer += 1
+        first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+
+        if first_value != 0:
+            # set instructionpointer to VALUE from second parameter
+            instruction_pointer += 1
+            mode_flag_pointer += 1
+            address_of_new_pointer_pos = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+
+            #new_pointer_position = int(instructions[address_of_new_pointer_pos])
+            instruction_pointer = address_of_new_pointer_pos
+            #instruction_pointer = new_pointer_position
+        else:
+            instruction_pointer += 2
+
+        return True
+    elif opcode == Opcode.JUMP_IF_FALSE.value:
+        # advance
+        instruction_pointer += 1
+        first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+        if first_value == 0:
+            # set instructionpointer to VALUE from second parameter
+            instruction_pointer += 1
+            mode_flag_pointer += 1
+            address_of_new_pointer_pos = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+
+            #new_pointer_position = int(instructions[address_of_new_pointer_pos])
+            instruction_pointer = address_of_new_pointer_pos
+        else:
+            instruction_pointer += 2
+
+        return True
+    elif opcode == Opcode.LESS_THAN.value:
+        # advance
+        instruction_pointer += 1
+        first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+
+        # advance
+        instruction_pointer += 1
+        mode_flag_pointer += 1
+        second_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+
+        # advance
+        instruction_pointer += 1
+        destination = int(instructions[instruction_pointer])
+
+        if first_value < second_value:
+            instructions[destination] = "1"
+        else:
+            instructions[destination] = "0"
+
+        instruction_pointer += 1
+        return True
+    elif opcode == Opcode.EQUALS.value:
+        # advance
+        instruction_pointer += 1
+        first_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+
+        # advance
+        instruction_pointer += 1
+        mode_flag_pointer += 1
+        second_value = next_value(instruction_pointer, mode_flags, mode_flag_pointer)
+
+        # advance
+        instruction_pointer += 1
+        destination = int(instructions[instruction_pointer])
+
+        if first_value == second_value:
+            instructions[destination] = "1"
+        else:
+            instructions[destination] = "0"
+
         instruction_pointer += 1
         return True
     elif opcode == Opcode.COMPLETE.value:
